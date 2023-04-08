@@ -19,7 +19,8 @@ def convert_markdown_to_html(markdown_file, html_file):
     # Read the input Markdown file and convert it to HTML
     with open(markdown_file, encoding="utf-8") as f:
         html_lines = []
-        in_list = False
+        current_paragraph = ""
+        in_paragraph = False
         for line in f:
             # Check for Markdown headings
             match = re.match(r"^(#+) (.*)$", line)
@@ -27,26 +28,42 @@ def convert_markdown_to_html(markdown_file, html_file):
                 heading_level = len(match.group(1))
                 heading_text = match.group(2)
                 html_lines.append(f"<h{heading_level}>{heading_text}</h{heading_level}>")
-            # Check for Markdown unordered list items
-            elif re.match(r"^\* (.*)$", line):
-                if not in_list:
-                    in_list = True
+            elif re.match(r"^\s*[*+-]\s+(.*)$", line):
+                # Check for unordered lists
+                if not in_paragraph:
                     html_lines.append("<ul>")
-                list_item_text = re.sub(r"^\* ", "", line.rstrip())
-                html_lines.append(f"<li>{list_item_text}</li>")
+                    in_paragraph = True
+                html_lines.append(f"<li>{re.match(r"^\s*[*+-]\s+(.*)$", line).group(1)}</li>")
+            elif re.match(r"^\s*[0-9]+\.\s+(.*)$", line):
+                # Check for ordered lists
+                if not in_paragraph:
+                    html_lines.append("<ol>")
+                    in_paragraph = True
+                html_lines.append(f"<li>{re.match(r"^\s*[0-9]+\.\s+(.*)$", line).group(1)}</li>")
+            elif re.match(r"^\s*__(.*)__\s*$", line):
+                # Check for emphasis syntax
+                html_lines.append(f"<em>{re.match(r'^\s*__(.*)__\s*$', line).group(1)}</em>")
+            elif line.strip() == "":
+                # Check for empty lines (which indicate the end of a paragraph)
+                if in_paragraph:
+                    html_lines.append("</ul>" if html_lines[-1] == "<ul>" else "</ol>")
+                    html_lines.append(f"<p>{current_paragraph.strip()}</p>")
+                    current_paragraph = ""
+                    in_paragraph = False
             else:
-                if in_list:
-                    in_list = False
-                    html_lines.append("</ul>")
-                html_lines.append(line.rstrip())
+                # Add the current line to the current paragraph
+                current_paragraph += line
+                in_paragraph = True
 
-        if in_list:
-            html_lines.append("</ul>")
+        # If the last line in the file was not an empty line, we need to add the final paragraph
+        if in_paragraph:
+            html_lines.append(f"<p>{current_paragraph.strip()}</p>")
+            if html_lines[-1] == "<ul>" or html_lines[-1] == "<ol>":
+                html_lines.append("</ul>" if html_lines[-1] == "<ul>" else "</ol>")
 
     # Write the HTML output to a file
     with open(html_file, "w", encoding="utf-8") as f:
         f.write("\n".join(html_lines))
-
 
 if __name__ == "__main__":
     # Check that the right number of arguments were provided
