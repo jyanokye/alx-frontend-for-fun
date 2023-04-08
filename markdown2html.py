@@ -75,4 +75,4 @@ if __name__ == "__main__":
     # Check that the correct number of arguments were provided
     if len(sys.argv) != 3:
         print("Usage: ./md2html.py <markdown_file> <html_file>", file=sys.stderr)
-        sys.exit(1
+        sys.exit(1)
