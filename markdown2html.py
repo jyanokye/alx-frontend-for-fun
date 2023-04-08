@@ -39,7 +39,7 @@ def convert_markdown_to_html(markdown_file, html_file):
                     html_lines.append(f"<li>{match.group(2)}</li>")
                 else:
                     # Check for Markdown ordered lists
-                    match = re.match(r"^\d+\.(.*)$", line)
+                    match = re.match(r"^[0-9]+\.(.*)$", line)
                     if match:
                         if not in_list:
                             html_lines.append("<ol>")
