@@ -1,7 +1,10 @@
 // Task: Assign text color #3D3D3D to body and p tags
-
 $text-color: #3D3D3D;
 
-body, p {
+body {
+  color: $text-color;
+}
+
+p {
   color: $text-color;
 }
